@@ -118,5 +118,4 @@ static inline int syscall_get_arch(void)
 
 	return AUDIT_ARCH_AARCH64;
 }
-
 #endif	/* __ASM_SYSCALL_H */
