@@ -1,7 +1,3 @@
-#include<stdint.h>
-#include<unistd.h>
-#include<sys/types.h>
-
 struct prinfo {
 	int64_t state;
 	pid_t 	pid;
