@@ -5,8 +5,7 @@ Due 10/8 -> 10/11
 
 README 파일 대신 PPT와 DEMO 비디오를 업로드 합니다..
 
-[PPT](https://github.com/Peterpan828/osfall2020-team10/presentation/proj1.ppt)
-[DEMO](https://github.com/Peterpan828/osfall2020-team10/presentation/proj1.mp4)
+[PPT](https://github.com/Peterpan828/osfall2020-team10/blob/proj1/Proj1.pptx)
 
 ## Installation
 Checkout to branch proj1
