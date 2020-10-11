@@ -9,7 +9,7 @@ README 파일 대신 PPT와 DEMO 비디오를 업로드 합니다..
 
 ## Installation
 Demo Video 재현
-'''bash
+```bash
 sudo ./build*
 sudo ./scripts/mkbootimg*
 sudo cp boot.img ../tizen-image
@@ -21,4 +21,4 @@ move test binary file to qemu
 run qemu
 run binary file in root/test/ (ex. ./test 50)
 
-'''
+```
