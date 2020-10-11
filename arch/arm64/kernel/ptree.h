@@ -6,6 +6,7 @@
 #include <asm/uaccess.h>
 #include <linux/init_task.h>
 #include <linux/list.h>
+#include <uapi/asm-generic/errno-base.h>
 
 struct task_struct * get_init_task(void)
 {
@@ -16,22 +17,38 @@ struct task_struct * get_init_task(void)
 int no_children(struct task_struct* cur_proc)
 {
 
-	struct list_head children;
-	children = cur_proc -> children;
-	return list_empty(&children);
+	struct list_head head_children;
+	struct task_struct *children;
+
+	head_children = cur_proc -> children;
+	if(list_empty(&head_children)) return true;
+	children = list_entry(\
+			head_children.next,
+			struct task_struct,
+			sibling);
+	if (children -> pid == 0) return true;
+
+	else return false;
 }
 
 int no_sibling(struct task_struct* cur_proc)
 {
-	struct list_head sibling;
+	struct list_head head_sibling;
 	struct list_head head = cur_proc -> parent -> children;
-	sibling = cur_proc -> sibling;
-	return list_is_last(&sibling, &head);
+	struct task_struct *sibling;
+	head_sibling = cur_proc -> sibling;
+	if(list_empty(&head_sibling)) return true;
+	if(list_is_last(&head_sibling, &head)) return true;
+	sibling = list_entry(\
+			head_sibling.next,
+			struct task_struct,
+			sibling);
+	if (sibling -> pid == 0) return true;
+	else return false;
 }
 
 struct prinfo get_prinfo(struct task_struct * cur_proc)
 {
-
 	struct prinfo new_pr;
 	struct list_head children;
 	struct list_head sibling;
@@ -46,6 +63,7 @@ struct prinfo get_prinfo(struct task_struct * cur_proc)
 	
        	children = cur_proc -> children;
         sibling	= cur_proc -> sibling;
+	
 	if (no_children(cur_proc))
 	{
 		new_pr.first_child_pid = 0;
@@ -72,13 +90,46 @@ struct prinfo get_prinfo(struct task_struct * cur_proc)
 	new_pr.next_sibling_pid = next_sibling -> pid;
 	}
 		
-
 	new_pr.state = cur_proc -> state;
 	new_pr.pid = cur_proc -> pid;
 	new_pr.parent_pid = cur_proc -> parent -> pid;
 	return new_pr;
 }
 
+
+struct task_struct *next_proc(struct task_struct *cur_proc)
+{
+	struct task_struct *new_proc;
+	if(!no_children(cur_proc))
+	{	
+		//printk(KERN_INFO "Has Children!!");
+		new_proc = list_entry(\
+				(cur_proc->children).next,
+				struct task_struct,
+				sibling);
+		return new_proc;
+	}
+	
+	while(no_sibling(cur_proc))
+	{	
+		//printk(KERN_INFO "No Sibling");
+		cur_proc = cur_proc -> parent;
+		if (cur_proc -> pid == 0) return NULL; // Came Back to Base!!
+	}
+
+	//printk(KERN_INFO "Next Sibling");
+	new_proc = list_entry(\
+			(cur_proc->sibling).next,
+			struct task_struct,
+			sibling);
+
+	if (new_proc -> pid == 0) return NULL;
+	
+	return new_proc;
+}
+		
+
+		
 int get_procs(struct prinfo *kbuf, int *nr)
 {
 	struct task_struct *cur_proc = get_init_task();
@@ -88,41 +139,24 @@ int get_procs(struct prinfo *kbuf, int *nr)
 
 	while(cur_proc != NULL)
 	{
-		total++;
+		//printk(KERN_INFO "cur_proc: %d", cur_proc -> pid);
 
-		new_pr = get_prinfo(cur_proc);
+		if ((cur_proc -> cred) != NULL)
+		{ 
+			//printk(KERN_INFO "FILL buf");
+			total++;
+			new_pr = get_prinfo(cur_proc);
 		
-		if(!no_children(cur_proc))
-		{
-			cur_proc = list_entry(\
-					cur_proc -> children.next, 
-					struct task_struct,
-					sibling);
-			continue;
-		}
-
-		while(no_sibling(cur_proc))
-		{
-			cur_proc = cur_proc -> parent;
-			if(cur_proc -> pid == 0) // Came back!!
+			if(count < *nr)
 			{
-				cur_proc = NULL;
-				continue;
+				kbuf[count] = new_pr;
+				count ++;
 			}
-		}
 
-
-		cur_proc = list_entry(\
-				cur_proc -> sibling.next,
-				struct task_struct,
-				sibling);
-			       	
-		if(count < *nr)
-		{
-			count ++;
-			kbuf[count] = new_pr;
 		}
-			
+		
+		cur_proc = next_proc(cur_proc);
+
 	}	
 	*nr = count;
 	return total;
