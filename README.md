@@ -9,7 +9,8 @@ README 파일 대신 PPT와 DEMO 비디오를 업로드 합니다..
 [DEMO](https://github.com/Peterpan828/osfall2020-team10/presentation/proj1.mp4)
 
 ## Installation
-Demo Video 재현
+Checkout to branch proj1
+
 ```bash
 sudo ./build*
 sudo ./scripts/mkbootimg*
