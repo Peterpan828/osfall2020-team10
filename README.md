@@ -14,6 +14,7 @@ sudo ./build*
 sudo ./scripts/mkbootimg*
 sudo cp boot.img ../tizen-image
 sudo cp modules.img ../tizen-image
+```
 
 compile test/test_ptree.c
 move test binary file to qemu
@@ -21,4 +22,4 @@ move test binary file to qemu
 run qemu
 run binary file in root/test/ (ex. ./test 50)
 
-```
+
